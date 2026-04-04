@@ -1,0 +1,29 @@
+# Build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# WASM output
+/pkg/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Wrangler
+.wrangler/
+
+# Cargo
+Cargo.lock

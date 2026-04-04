@@ -1,0 +1,49 @@
+name = "worker-core"
+main = "src/lib.rs"
+compatibility_date = "2025-03-04"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespaces — auto-created by wrangler deploy if IDs are omitted
+[[kv_namespaces]]
+binding = "KV_SHARED"
+preview_id = ""
+
+[[kv_namespaces]]
+binding = "KV_KEYS"
+preview_id = ""
+
+[[kv_namespaces]]
+binding = "KV_STORAGE"
+preview_id = ""
+
+# D1 Databases
+[[d1_databases]]
+binding = "DB_SHARED"
+database_name = "factory-db-shared"
+migrations_dir = "migrations"
+
+# R2 Buckets
+[[r2_buckets]]
+binding = "R2_STORAGE"
+bucket_name = "factory-outputs"
+
+[vars]
+WORKER_NAME = "worker-core"
+ENVIRONMENT = "production"
+
+# Secrets (set via wrangler secret put or GitHub repo secrets)
+# GOOGLE_AI_KEYS
+# OPENROUTER_API_KEYS
+# HUGGINGFACE_API_KEYS
+# GROQ_API_KEYS
+# MISTRAL_API_KEYS
+# GITHUB_TOKENS
+# GDRIVE_CREDENTIALS
+# GPAY_MERCHANT_ID
+# GPAY_MERCHANT_KEY
+# GPAY_PUBLIC_KEY
+# MAILGUN_API_KEY
+# MAILGUN_DOMAIN
+# WHATSAPP_API_TOKEN
+# CLOUDFLARE_API_TOKEN
+# ADMIN_AUTH_TOKEN

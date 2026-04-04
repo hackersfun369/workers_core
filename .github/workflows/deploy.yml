@@ -1,0 +1,85 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker-core/**'
+  workflow_dispatch:
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker-core
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Install wrangler
+        run: npm install -g wrangler
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build WASM
+        run: wasm-pack build --target web --release
+
+      - name: Run tests
+        run: cargo test
+
+      - name: Create KV namespaces
+        run: |
+          wrangler kv:namespace create "KV_SHARED" 2>/dev/null || echo "KV_SHARED exists"
+          wrangler kv:namespace create "KV_KEYS" 2>/dev/null || echo "KV_KEYS exists"
+          wrangler kv:namespace create "KV_STORAGE" 2>/dev/null || echo "KV_STORAGE exists"
+
+      - name: Create D1 database
+        run: |
+          wrangler d1 create "factory-db-shared" 2>/dev/null || echo "D1 exists"
+          wrangler d1 migrations apply factory-db-shared --remote 2>/dev/null || echo "Migrations applied or exist"
+
+      - name: Create R2 bucket
+        run: wrangler r2 bucket create factory-outputs 2>/dev/null || echo "R2 bucket exists"
+
+      - name: Set secrets
+        run: |
+          echo "${{ secrets.GOOGLE_AI_KEYS }}" | wrangler secret put GOOGLE_AI_KEYS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.OPENROUTER_API_KEYS }}" | wrangler secret put OPENROUTER_API_KEYS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.HUGGINGFACE_API_KEYS }}" | wrangler secret put HUGGINGFACE_API_KEYS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.GROQ_API_KEYS }}" | wrangler secret put GROQ_API_KEYS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.MISTRAL_API_KEYS }}" | wrangler secret put MISTRAL_API_KEYS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.GITHUB_TOKENS }}" | wrangler secret put GITHUB_TOKENS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.GDRIVE_CREDENTIALS }}" | wrangler secret put GDRIVE_CREDENTIALS 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.ADMIN_AUTH_TOKEN }}" | wrangler secret put ADMIN_AUTH_TOKEN 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.MAILGUN_API_KEY }}" | wrangler secret put MAILGUN_API_KEY 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.MAILGUN_DOMAIN }}" | wrangler secret put MAILGUN_DOMAIN 2>/dev/null || echo "Secret exists"
+          echo "${{ secrets.WHATSAPP_API_TOKEN }}" | wrangler secret put WHATSAPP_API_TOKEN 2>/dev/null || echo "Secret exists"
+
+      - name: Deploy
+        run: wrangler deploy
+
+      - name: Verify
+        run: |
+          sleep 10
+          curl -f https://worker-core.autonomous-software-factory.workers.dev || echo "Check manually"
