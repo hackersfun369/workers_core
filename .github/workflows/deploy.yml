@@ -3,8 +3,6 @@ name: Deploy to Cloudflare
 on:
   push:
     branches: [main]
-    paths:
-      - 'worker-core/**'
   workflow_dispatch:
 
 env:
@@ -14,9 +12,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: worker-core
 
     steps:
       - name: Checkout
