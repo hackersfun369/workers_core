@@ -1,5 +1,5 @@
 name = "worker-core"
-main = "pkg/workers_core.js"
+main = "pkg/worker_core.js"
 compatibility_date = "2025-03-04"
 compatibility_flags = ["nodejs_compat"]
 
