@@ -23,9 +23,9 @@ database_name = "factory-db-shared"
 migrations_dir = "migrations"
 
 # R2 Buckets
-[[r2_buckets]]
-binding = "R2_STORAGE"
-bucket_name = "factory-outputs"
+# [[r2_buckets]]
+# binding = "R2_STORAGE"
+# bucket_name = "factory-outputs"
 
 [vars]
 WORKER_NAME = "worker-core"
